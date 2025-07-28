@@ -5,6 +5,26 @@ import (
 	"reflect"
 )
 
+// isValidFieldName checks if a field name contains only safe characters for reflection
+func isValidFieldName(name string) bool {
+	if name == "" {
+		return false
+	}
+	// Go field names can only contain letters, numbers, and underscores, and must start with a letter or underscore
+	for i, r := range name {
+		if i == 0 {
+			if !((r >= 'A' && r <= 'Z') || (r >= 'a' && r <= 'z') || r == '_') {
+				return false
+			}
+		} else {
+			if !((r >= 'A' && r <= 'Z') || (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') || r == '_') {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 // Port copies over values from one struct to another struct.
 func Port(from any, to any) error {
 	toVal := reflect.ValueOf(to)
@@ -58,6 +78,10 @@ func Port(from any, to any) error {
 			}
 			values[ptag.name] = v.Field(i)
 			if j.IsValid() {
+				// Validate field name to prevent unsafe reflection
+				if !isValidFieldName(field.Name) {
+					continue
+				}
 				fields[ptag.name] = j.FieldByName(field.Name)
 			}
 		}
@@ -97,6 +121,10 @@ func Port(from any, to any) error {
 		}
 
 		if fromJSONField, ok := fields[ptag.name]; ok {
+			// Validate field name to prevent unsafe reflection
+			if !isValidFieldName(field.Name) {
+				continue
+			}
 			if toJSONField := toJSON.FieldByName(field.Name); toJSONField.IsValid() {
 				toJSONField.Set(fromJSONField)
 			}
