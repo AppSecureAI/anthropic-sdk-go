@@ -5,6 +5,24 @@ import (
 	"reflect"
 )
 
+// isValidFieldName validates that a field name is safe to use with reflection
+func isValidFieldName(name string) bool {
+	if len(name) == 0 {
+		return false
+	}
+	// Only allow exported fields (start with capital letter)
+	if name[0] < 'A' || name[0] > 'Z' {
+		return false
+	}
+	// Only allow alphanumeric characters and underscores
+	for _, c := range name {
+		if !((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_') {
+			return false
+		}
+	}
+	return true
+}
+
 // Port copies over values from one struct to another struct.
 func Port(from any, to any) error {
 	toVal := reflect.ValueOf(to)
@@ -57,7 +75,7 @@ func Port(from any, to any) error {
 				continue
 			}
 			values[ptag.name] = v.Field(i)
-			if j.IsValid() {
+			if j.IsValid() && isValidFieldName(field.Name) {
 				fields[ptag.name] = j.FieldByName(field.Name)
 			}
 		}
