@@ -58,7 +58,12 @@ func Port(from any, to any) error {
 			}
 			values[ptag.name] = v.Field(i)
 			if j.IsValid() {
-				fields[ptag.name] = j.FieldByName(field.Name)
+				// Validate field name is exported and safe to access
+				if len(field.Name) > 0 && field.Name[0] >= 'A' && field.Name[0] <= 'Z' {
+					if jField := j.FieldByName(field.Name); jField.IsValid() {
+						fields[ptag.name] = jField
+					}
+				}
 			}
 		}
 	}
