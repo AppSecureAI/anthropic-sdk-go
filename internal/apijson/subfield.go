@@ -3,9 +3,29 @@ package apijson
 import (
 	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
 	"reflect"
+	"regexp"
 )
 
+// isValidFieldName validates that a field name is safe for reflection access
+func isValidFieldName(name string) bool {
+	// Only allow alphanumeric characters and underscores
+	// Field name must start with a capital letter (exported fields)
+	// Limit length to prevent abuse
+	if len(name) == 0 || len(name) > 50 {
+		return false
+	}
+	
+	// Use regex to validate field name format
+	matched, _ := regexp.MatchString("^[A-Z][a-zA-Z0-9_]*$", name)
+	return matched
+}
+
 func getSubField(root reflect.Value, index []int, name string) reflect.Value {
+	// Validate field name to prevent unsafe reflection access
+	if !isValidFieldName(name) {
+		return reflect.Value{}
+	}
+	
 	strct := root.FieldByIndex(index[:len(index)-1])
 	if !strct.IsValid() {
 		panic("couldn't find encapsulating struct for field " + name)
