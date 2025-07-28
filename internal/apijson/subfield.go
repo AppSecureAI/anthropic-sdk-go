@@ -14,11 +14,31 @@ func getSubField(root reflect.Value, index []int, name string) reflect.Value {
 	if !meta.IsValid() {
 		return reflect.Value{}
 	}
+	
+	// Security fix: Validate field name against allowed list
+	if !isAllowedFieldName(name) {
+		return reflect.Value{}
+	}
+	
 	field := meta.FieldByName(name)
 	if !field.IsValid() {
 		return reflect.Value{}
 	}
 	return field
+}
+
+// isAllowedFieldName validates that the field name is safe to access
+func isAllowedFieldName(name string) bool {
+	// Define allowed field names - customize based on your specific use case
+	allowedFields := map[string]bool{
+		"Raw":         true,
+		"Parsed":      true,
+		"Required":    true,
+		"Format":      true,
+		"Extras":      true,
+		// Add other legitimate field names as needed
+	}
+	return allowedFields[name]
 }
 
 func setMetadataSubField(root reflect.Value, index []int, name string, meta Field) {
