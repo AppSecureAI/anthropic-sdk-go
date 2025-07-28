@@ -5,7 +5,35 @@ import (
 	"reflect"
 )
 
+// isValidFieldName validates that a field name is safe for reflection
+func isValidFieldName(name string) bool {
+	// Check length limits
+	if len(name) == 0 || len(name) > 100 {
+		return false
+	}
+	
+	// Check that name starts with a letter
+	if name[0] < 'A' || (name[0] > 'Z' && name[0] < 'a') || name[0] > 'z' {
+		return false
+	}
+	
+	// Check that all characters are alphanumeric or underscore
+	for i := 0; i < len(name); i++ {
+		c := name[i]
+		if !((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_') {
+			return false
+		}
+	}
+	
+	return true
+}
+
 func getSubField(root reflect.Value, index []int, name string) reflect.Value {
+	// Validate field name to prevent unsafe reflection
+	if !isValidFieldName(name) {
+		return reflect.Value{}
+	}
+	
 	strct := root.FieldByIndex(index[:len(index)-1])
 	if !strct.IsValid() {
 		panic("couldn't find encapsulating struct for field " + name)
