@@ -1,6 +1,6 @@
 module github.com/anthropics/anthropic-sdk-go
 
-go 1.21
+go 1.23.0
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.30.3
@@ -9,7 +9,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/tidwall/gjson v1.14.4
 	github.com/tidwall/sjson v1.2.5
-	golang.org/x/oauth2 v0.21.0
+	golang.org/x/oauth2 v0.27.0
 	google.golang.org/api v0.189.0
 )
 
