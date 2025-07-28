@@ -6,6 +6,11 @@ import (
 )
 
 func getSubField(root reflect.Value, index []int, name string) reflect.Value {
+	// Validate field name to prevent arbitrary field access via reflection
+	if !isValidFieldName(name) {
+		return reflect.Value{}
+	}
+	
 	strct := root.FieldByIndex(index[:len(index)-1])
 	if !strct.IsValid() {
 		panic("couldn't find encapsulating struct for field " + name)
@@ -19,6 +24,37 @@ func getSubField(root reflect.Value, index []int, name string) reflect.Value {
 		return reflect.Value{}
 	}
 	return field
+}
+
+// isValidFieldName validates that the field name is safe to use with reflection
+func isValidFieldName(name string) bool {
+	// Reject empty names
+	if len(name) == 0 {
+		return false
+	}
+	
+	// Limit field name length to prevent abuse
+	if len(name) > 100 {
+		return false
+	}
+	
+	// Only allow alphanumeric characters, underscores, and hyphens
+	for _, char := range name {
+		if !((char >= 'a' && char <= 'z') || 
+			 (char >= 'A' && char <= 'Z') || 
+			 (char >= '0' && char <= '9') || 
+			 char == '_' || char == '-') {
+			return false
+		}
+	}
+	
+	// Prevent access to potentially sensitive fields
+	// Fields starting with underscore are typically private
+	if name[0] == '_' {
+		return false
+	}
+	
+	return true
 }
 
 func setMetadataSubField(root reflect.Value, index []int, name string, meta Field) {
